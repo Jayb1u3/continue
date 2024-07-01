@@ -2,6 +2,14 @@ const fs = require("fs");
 const os = require("os");
 const { execSync } = require("child_process");
 
+/* ───────────────────────────────────────────────── */
+/* << Utility Functions >> */
+/* ───────────────────────────────────────────────── */
+
+/* 
+   Executes a command synchronously and handles errors. 
+   If an error occurs, logs the error output and exits the process.
+*/
 function execCmdSync(cmd) {
   try {
     execSync(cmd);
@@ -11,8 +19,12 @@ function execCmdSync(cmd) {
   }
 }
 
+/* 
+   Autodetects the platform and architecture of the system.
+   Returns an array containing the detected platform and architecture.
+*/
 function autodetectPlatformAndArch() {
-  platform = {
+  const platform = {
     aix: "linux",
     alpine: "linux",
     darwin: "darwin",
@@ -22,7 +34,8 @@ function autodetectPlatformAndArch() {
     sunos: "linux",
     win32: "win32",
   }[process.platform];
-  arch = {
+  
+  const arch = {
     arm: "arm64",
     armhf: "arm64",
     arm64: "arm64",
@@ -37,15 +50,22 @@ function autodetectPlatformAndArch() {
     s390x: "x64",
     x64: "x64",
   }[process.arch];
+
   return [platform, arch];
 }
 
+/* 
+   Validates the presence of specified files and checks if they are non-empty.
+   Logs detailed information about missing or empty files and their directories.
+   Throws an error if any files are missing or empty.
+*/
 function validateFilesPresent(pathsToVerify) {
-  // This script verifies after pacakging that necessary files are in the correct locations
+  // This script verifies after packaging that necessary files are in the correct locations
   // In many cases just taking a sample file from the folder when they are all roughly the same thing
 
   let missingFiles = [];
   let emptyFiles = [];
+
   for (const path of pathsToVerify) {
     if (!fs.existsSync(path)) {
       const parentFolder = path.split("/").slice(0, -1).join("/");
@@ -58,25 +78,25 @@ function validateFilesPresent(pathsToVerify) {
       } else {
         console.error(
           "Contents of parent folder:",
-          fs.readdirSync(parentFolder),
+          fs.readdirSync(parentFolder)
         );
       }
       if (!fs.existsSync(grandparentFolder)) {
         console.error(`Grandparent folder ${grandparentFolder} does not exist`);
         if (!fs.existsSync(grandGrandparentFolder)) {
           console.error(
-            `Grandgrandparent folder ${grandGrandparentFolder} does not exist`,
+            `Grandgrandparent folder ${grandGrandparentFolder} does not exist`
           );
         } else {
           console.error(
             "Contents of grandgrandparent folder:",
-            fs.readdirSync(grandGrandparentFolder),
+            fs.readdirSync(grandGrandparentFolder)
           );
         }
       } else {
         console.error(
           "Contents of grandparent folder:",
-          fs.readdirSync(grandparentFolder),
+          fs.readdirSync(grandparentFolder)
         );
       }
 
@@ -91,7 +111,7 @@ function validateFilesPresent(pathsToVerify) {
 
   if (missingFiles.length > 0 || emptyFiles.length > 0) {
     throw new Error(
-      `The following files were missing:\n- ${missingFiles.join("\n- ")}\n\nThe following files were empty:\n- ${emptyFiles.join("\n- ")}`,
+      `The following files were missing:\n- ${missingFiles.join("\n- ")}\n\nThe following files were empty:\n- ${emptyFiles.join("\n- ")}`
     );
   } else {
     console.log("All paths exist");
